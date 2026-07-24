@@ -7,6 +7,7 @@ import { KeywordChip } from "./KeywordChip";
 import { GiftWrap, FlapProgress } from "./GiftWrap";
 
 const DRAG_DISTANCE = 200;
+const BASE_DRAG_DISTANCE = 110;
 const COMPLETE_THRESHOLD = 0.9;
 
 type Step = "cornerRight" | "cornerLeft" | "base" | "done";
@@ -27,6 +28,7 @@ export function BookSlot({
   onUnwrapComplete: () => void;
 }) {
   const [step, setStep] = useState<Step>("cornerRight");
+  const [committedProgress, setCommittedProgress] = useState(0);
   const [liveProgress, setLiveProgress] = useState(0);
   const [dragging, setDragging] = useState(false);
   const startPos = useRef<{ x: number; y: number } | null>(null);
@@ -35,7 +37,12 @@ export function BookSlot({
 
   function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     if (!active) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // If capture fails for any reason, keep going anyway — dragging
+      // will still work via normal move/up events on this element.
+    }
     startPos.current = { x: e.clientX, y: e.clientY };
     setDragging(true);
   }
@@ -45,17 +52,24 @@ export function BookSlot({
     const dx = e.clientX - startPos.current.x;
     const dy = e.clientY - startPos.current.y;
 
+    let delta: number;
     if (step === "base") {
-      // Simple left-to-right drag for the final panel — just pull the
-      // left side of the paper across to the right.
-      setLiveProgress(Math.min(Math.max(dx, 0) / DRAG_DISTANCE, 1));
+      delta = Math.max(dx, 0) / BASE_DRAG_DISTANCE;
     } else {
       const dist = Math.sqrt(dx * dx + dy * dy);
-      setLiveProgress(Math.min(dist / DRAG_DISTANCE, 1));
+      delta = dist / DRAG_DISTANCE;
     }
+
+    setLiveProgress(Math.min(Math.max(committedProgress + delta, 0), 1));
   }
 
-  function finishDrag() {
+  function finishDrag(e: React.PointerEvent<HTMLDivElement>) {
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+      // Already released — safe to ignore.
+    }
+
     setDragging(false);
     startPos.current = null;
 
@@ -63,12 +77,13 @@ export function BookSlot({
       const currentIndex = STEP_ORDER.indexOf(step);
       const nextStep = STEP_ORDER[currentIndex + 1];
       setLiveProgress(0);
+      setCommittedProgress(0);
       setStep(nextStep);
       if (nextStep === "done") {
         onUnwrapComplete();
       }
     } else {
-      setLiveProgress(0);
+      setCommittedProgress(liveProgress);
     }
   }
 

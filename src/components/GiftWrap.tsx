@@ -44,6 +44,8 @@ function Panel({
 }) {
   const angle = (hinge === "right" ? -1 : 1) * 150 * progress;
 
+  const scale = 1 + 0.18 * progress;
+
   return (
     <div
       className="absolute inset-0"
@@ -82,7 +84,7 @@ export function GiftWrap({
   return (
     <div
       className="relative h-full w-full rounded-2xl"
-      style={{ perspective: 1000 }}
+      style={{ perspective: 500 }}
     >
       <motion.div
         className="absolute inset-0 z-0 flex items-center justify-center"
