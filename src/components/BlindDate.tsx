@@ -106,10 +106,6 @@ export function BlindDate({
       />
 
       {loading && <p className="text-sm text-stone-500">Generating teaser…</p>}
-
-      {revealed && (
-        <p className="text-sm text-stone-500">That&rsquo;s your book!</p>
-      )}
     </div>
   );
 }

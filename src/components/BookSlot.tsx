@@ -109,7 +109,7 @@ export function BookSlot({
           dragging={dragging}
         >
           <div className="flex flex-col items-center gap-3 p-4 text-center">
-            <div className="flex w-24 items-center justify-center overflow-hidden rounded-lg bg-stone-200 aspect-[1/1.6]">
+            <div className="flex w-40 items-center justify-center overflow-hidden rounded-lg bg-stone-200 shadow-lg aspect-[1/1.6]">
               {coverLoading ? (
                 <p className="text-2xl">📖</p>
               ) : coverUrl ? (
@@ -122,12 +122,6 @@ export function BookSlot({
               ) : (
                 <p className="text-2xl">📖</p>
               )}
-            </div>
-            <div>
-              <p className="font-serif text-lg text-stone-800">
-                {book.title}
-              </p>
-              <p className="mt-1 text-xs text-stone-500">{book.author}</p>
             </div>
           </div>
         </GiftWrap>
